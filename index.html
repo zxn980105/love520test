@@ -1276,17 +1276,13 @@ function generateShareImage() {
     html2canvas(shareCard, {
       scale: 3,
       backgroundColor: '#fff5f7',
-      useCORS: false,
-      allowTaint: true,
+      useCORS: true,
+      allowTaint: false,
       logging: false,
       onclone: function(clonedDoc) {
-        // 在克隆文档里处理：把加载失败的头像和 SVG 雷达图都拿掉，避免渲染出错
+        // 在克隆文档里移除 SVG 雷达图（html2canvas 对 SVG 渲染容易出错）
         const clonedCard = clonedDoc.getElementById('share-card');
         if (!clonedCard) return;
-        const badImg = clonedCard.querySelector('#share-avatar');
-        if (badImg && (badImg.naturalWidth === 0 || badImg.style.display === 'none' || !badImg.complete)) {
-          badImg.remove();
-        }
         const svgEl = clonedCard.querySelector('.radar-svg');
         if (svgEl) svgEl.remove();
       }
