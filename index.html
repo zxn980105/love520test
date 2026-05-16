@@ -1202,7 +1202,7 @@ function copyResult() {
   const r = results[code];
   const d = details[code];
   const p = professional[code];
-  const text = `【520恋爱段位测试】\n\n我的恋爱段位：${code} · ${r.title}\n\n${r.catchphrase}\n\n${d}\n\n💡 恋爱依恋类型：${p.interpretation}\n💕 最佳匹配：${p.best_match}\n\n快来测测你的恋爱段位→ 链接`;
+  const text = `【520恋爱段位测试】\n\n我的恋爱段位：${r.title}\n\n${r.catchphrase}\n\n${d}\n\n💡 ${p.interpretation}\n💕 最佳匹配：${p.matches[0].title}\n\n快来测测你的恋爱段位→ https://zxn980105.github.io/love520test/`;
   if (navigator.clipboard) {
     navigator.clipboard.writeText(text).then(() => alert('结果已复制，快去分享吧！'));
   } else {
