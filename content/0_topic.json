@@ -1,0 +1,38 @@
+{
+  "test_name": "520恋爱段位测试",
+  "subtitle": "测测你的恋爱段位，32款总有一款重伤你",
+  "description": "本测试基于成人依恋理论，测量五个维度：姿态、表达、投入、节奏、依恋需求。每题1~5分，1=非常左边，5=非常右边。",
+  "scoring_method": "每个维度4题，计算平均分；<3取左侧字母，>3取右侧字母，=3取左侧。",
+  "optional_fields": ["gender", "constellation"],
+  "gender_options": ["男", "女", "其他/不愿透露"],
+  "constellation_list": ["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"],
+  "questions": [
+    { "id": 1, "title": "暧昧秒回", "dimension": "姿态", "left_label": "秒回：“在！一直在！”", "right_label": "看到但过一会儿再回，不能显得太闲" },
+    { "id": 2, "title": "朋友调侃", "dimension": "姿态", "left_label": "“为爱改变怎么了”", "right_label": "“我恋爱中也很清醒”" },
+    { "id": 3, "title": "拒绝反应", "dimension": "姿态", "left_label": "换个理由再约，不轻易放弃", "right_label": "算了，下次等TA主动找我" },
+    { "id": 4, "title": "口头禅偏好", "dimension": "姿态", "left_label": "“宝宝～我的小心肝～”", "right_label": "“想我了？那得看你表现”" },
+    { "id": 5, "title": "暧昧竞争", "dimension": "表达", "left_label": "心里难受但假装没事，对TA更好", "right_label": "直接后撤，不参与竞争" },
+    { "id": 6, "title": "爱意表达", "dimension": "表达", "left_label": "甜言蜜语，土味情话张口就来", "right_label": "默默做事，买好吃的、帮忙解决问题" },
+    { "id": 7, "title": "安慰方式", "dimension": "表达", "left_label": "疯狂讲段子、发语音逗TA笑", "right_label": "不说话，直接买杯奶茶塞给TA" },
+    { "id": 8, "title": "秀恩爱心态", "dimension": "表达", "left_label": "小作文配九宫格，文案深情", "right_label": "一张合照，甚至懒得发" },
+    { "id": 9, "title": "吵架风格", "dimension": "投入", "left_label": "滔滔不绝，把心里话全倒出来", "right_label": "沉默，但会默默做点讨好TA的事" },
+    { "id": 10, "title": "被追问爱意", "dimension": "投入", "left_label": "立刻输出一大段真情告白", "right_label": "直接抱上去，或者发个红包" },
+    { "id": 11, "title": "承诺兑现", "dimension": "投入", "left_label": "说到做到，做不到的不轻易说", "right_label": "当时是真心的，但过后可能忘了" },
+    { "id": 12, "title": "恐惧来源", "dimension": "投入", "left_label": "怕TA突然消失，再也不理我", "right_label": "怕TA太粘人，让我喘不过气" },
+    { "id": 13, "title": "联系频率", "dimension": "节奏", "left_label": "每天都要聊，不然心里空落落", "right_label": "两三天一次就够，各有各的事" },
+    { "id": 14, "title": "消息延迟", "dimension": "节奏", "left_label": "开始胡思乱想，翻TA朋友圈找线索", "right_label": "该干嘛干嘛，忘了自己发过啥" },
+    { "id": 15, "title": "异地接受度", "dimension": "节奏", "left_label": "勉强可以异地，但要每天视频报备", "right_label": "可以异地，各自独立，定期见面就行" },
+    { "id": 16, "title": "喜欢状态", "dimension": "节奏", "left_label": "打了鸡血，恨不得24小时粘着", "right_label": "暗中观察，不轻易暴露心意" },
+    { "id": 17, "title": "确定关系速度", "dimension": "依恋需求", "left_label": "认识一周内确定关系，快刀斩乱麻", "right_label": "至少了解两三个月再说，慢工出细活" },
+    { "id": 18, "title": "套路看法", "dimension": "依恋需求", "left_label": "讨厌套路，真心就是最大诚意", "right_label": "套路是调味料，没点心机怎么赢" },
+    { "id": 19, "title": "手机隐私", "dimension": "依恋需求", "left_label": "会给伴侣手机密码，没有秘密", "right_label": "不会给，这是个人边界" },
+    { "id": 20, "title": "爱情观", "dimension": "依恋需求", "left_label": "“爱是彼此依赖”", "right_label": "“爱是各自独立，互相欣赏”" }
+  ],
+  "dimension_mapping": {
+    "姿态": { "left": "L", "right": "H", "question_ids": [1,2,3,4] },
+    "表达": { "left": "T", "right": "D", "question_ids": [5,6,7,8] },
+    "投入": { "left": "R", "right": "F", "question_ids": [9,10,11,12] },
+    "节奏": { "left": "A", "right": "C", "question_ids": [13,14,15,16] },
+    "依恋需求": { "left": "N", "right": "S", "question_ids": [17,18,19,20] }
+  }
+}

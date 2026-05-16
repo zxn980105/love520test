@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>测测你的恋爱段位</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #fef6f8;
+      --card: #ffffff;
+      --primary: #e85d75;
+      --primary-light: #ffd1d9;
+      --text: #333333;
+      --text-light: #777777;
+      --border: #f0e0e4;
+      --accent: #ff8fa3;
+      --accent2: #c47a8a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 16px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .page {
+      display: none;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+      animation: fadeIn 0.5s ease;
+    }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+    @keyframes heartBeat { 0%,100%{transform:scale(1)} 14%{transform:scale(1.1)} 28%{transform:scale(1)} 42%{transform:scale(1.1)} }
+
+    /* ===== 封面 ===== */
+    .cover { text-align: center; padding-top: 40px; }
+    .cover-emoji { font-size: 72px; animation: float 3s ease infinite; display: inline-block; margin-bottom: 16px; }
+    .cover h1 { font-size: 32px; font-weight: 800; color: var(--primary); margin-bottom: 8px; letter-spacing: 2px; }
+    .cover .subtitle { font-size: 15px; color: var(--text-light); margin-bottom: 30px; line-height: 1.6; }
+    .cover .desc {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: left;
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.8;
+      margin-bottom: 30px;
+      border: 1px solid var(--border);
+    }
+    .cover .desc strong { color: var(--primary); }
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 16px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 6px 20px rgba(232,93,117,0.3);
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,93,117,0.4); }
+    .btn:active { transform: scale(0.98); }
+    .cover-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 20px; }
+    .cover-tags span {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ===== 信息页 ===== */
+    .info-form { margin-top: 20px; }
+    .form-group { margin-bottom: 24px; }
+    .form-group label { display: block; font-size: 14px; color: var(--text-light); margin-bottom: 10px; font-weight: 600; }
+    .form-options { display: flex; flex-wrap: wrap; gap: 10px; }
+    .form-options label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 30px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .form-options input { display: none; }
+    .form-options label:has(input:checked) {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .constellation-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .constellation-grid label {
+      justify-content: center;
+      padding: 10px 0;
+      font-size: 13px;
+    }
+    .skip-btn {
+      background: transparent;
+      color: var(--text-light);
+      border: 1px solid var(--border);
+      box-shadow: none;
+      margin-top: 10px;
+    }
+    .skip-btn:hover { background: var(--border); }
+
+    /* ===== 答题页 ===== */
+    .quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .quiz-header .back { font-size: 20px; cursor: pointer; color: var(--text-light); padding: 8px; }
+    .progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; margin: 0 12px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 3px; transition: width 0.4s ease; }
+    .progress-text { font-size: 13px; color: var(--primary); font-weight: 700; min-width: 36px; text-align: right; }
+
+    .question-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px 24px;
+      border: 1px solid var(--border);
+      min-height: calc(100vh - 160px);
+      display: flex;
+      flex-direction: column;
+    }
+    .q-dimension {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .q-title { font-size: 22px; font-weight: 700; line-height: 1.5; margin-bottom: 8px; }
+    .q-subtitle { font-size: 14px; color: var(--text-light); margin-bottom: 30px; }
+    .slider-container { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .labels-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .labels-row .left { text-align: left; max-width: 45%; }
+    .labels-row .right { text-align: right; max-width: 45%; }
+    .slider-track {
+      position: relative;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .slider-track::before {
+      content: "";
+      position: absolute;
+      top: -6px;
+      left: 25%; width: 2px; height: 20px; background: #ddd; border-radius: 1px;
+    }
+    .slider-track::after {
+      content: "";
+      position: absolute;
+      top: -6px;
+      left: 75%; width: 2px; height: 20px; background: #ddd; border-radius: 1px;
+    }
+    .slider-mid {
+      content: "";
+      position: absolute;
+      top: -6px;
+      left: 50%; width: 2px; height: 20px;
+      background: #ddd; border-radius: 1px;
+      margin-left: -1px;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: transparent;
+      position: relative;
+      z-index: 2;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(232,93,117,0.4);
+      border: 3px solid #fff;
+      margin-top: -10px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(232,93,117,0.4);
+      border: 3px solid #fff;
+    }
+    .score-dots {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 8px;
+    }
+    .score-dot {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+      color: var(--text-light);
+      background: var(--border);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .score-dot.active { background: var(--primary); color: #fff; transform: scale(1.15); }
+    .next-btn { margin-top: auto; }
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 20px;
+    }
+    .btn-row .btn { margin: 0; }
+    .btn-outline {
+      background: #fff;
+      color: var(--primary);
+      border: 2px solid var(--primary-light);
+      box-shadow: none;
+    }
+    .btn-outline:hover {
+      background: var(--primary-light);
+      box-shadow: none;
+    }
+    .btn-outline:disabled {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ===== 加载页 ===== */
+    .loading-page { text-align: center; padding-top: 120px; }
+    .loading-page .heart { font-size: 60px; animation: heartBeat 1.2s ease infinite; display: inline-block; }
+    .loading-page p { margin-top: 24px; font-size: 16px; color: var(--text-light); }
+    .loading-dots::after {
+      content: "";
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+    @keyframes dots { 0%{content:""} 25%{content:"."} 50%{content:".."} 75%{content:"..."} }
+
+    /* ===== 结果页 ===== */
+    .result-header { text-align: center; padding: 20px 0; }
+    .result-header .label { font-size: 14px; color: var(--text-light); margin-bottom: 8px; }
+    .result-header .type-code {
+      font-size: 48px; font-weight: 900;
+      background: linear-gradient(135deg, var(--primary), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+      line-height: 1.1;
+    }
+    .result-header .type-title {
+      font-size: 26px; font-weight: 800;
+      color: var(--primary);
+      margin-top: 8px;
+    }
+    .result-header .catchphrase {
+      font-size: 14px; color: var(--text-light);
+      margin-top: 8px; line-height: 1.6;
+      padding: 0 20px;
+    }
+    .result-match {
+      display: inline-block;
+      background: linear-gradient(135deg, #fff0f3, #ffe8ed);
+      border: 1px solid var(--primary-light);
+      color: var(--primary);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 16px;
+    }
+
+    .result-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px;
+      margin-top: 20px;
+      border: 1px solid var(--border);
+    }
+    .result-card h3 {
+      font-size: 16px; font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .result-card h3 .icon { font-size: 20px; }
+    .result-card .detail-text {
+      font-size: 14px; line-height: 2;
+      color: var(--text);
+    }
+    .result-card .detail-text strong { color: var(--primary); }
+    .buff-box {
+      background: linear-gradient(135deg, #fff5f7, #ffeaee);
+      border-left: 3px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 0 12px 12px 0;
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+    .buff-box strong { color: var(--primary); }
+
+    .radar-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .radar-svg { width: 100%; max-width: 320px; height: auto; }
+    .radar-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .radar-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .radar-legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .best-match-card {
+      background: linear-gradient(135deg, #fff5f7, #ffeaee);
+      border: 1px solid var(--primary-light);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 16px;
+      text-align: center;
+    }
+    .best-match-card .bm-label { font-size: 12px; color: var(--text-light); }
+    .best-match-card .bm-text { font-size: 15px; font-weight: 700; color: var(--primary); margin-top: 4px; }
+
+    .match-list { display: flex; flex-direction: column; gap: 10px; }
+    .match-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .match-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .match-percent {
+      font-size: 15px; font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .match-quote { font-size: 13px; color: var(--text-light); line-height: 1.7; }
+
+    .share-section { margin-top: 24px; text-align: center; }
+    .share-section .share-hint { font-size: 13px; color: var(--text-light); margin-bottom: 12px; }
+    .share-btns { display: flex; gap: 12px; justify-content: center; }
+    .share-btns button {
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+    }
+    .share-btns .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(232,93,117,0.3);
+    }
+    .share-btns .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .share-btns button:hover { transform: translateY(-2px); }
+
+    .restart-btn {
+      background: transparent;
+      color: var(--text-light);
+      border: 1px solid var(--border);
+      padding: 12px 32px;
+      border-radius: 30px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: all 0.3s;
+    }
+    .restart-btn:hover { background: var(--border); }
+
+    /* 分享卡片（截图用） */
+    #share-card {
+      background: linear-gradient(180deg, #fff5f7 0%, #ffffff 30%, #ffffff 100%);
+      border-radius: 20px;
+      padding: 32px 28px;
+      max-width: 420px;
+      margin: 0 auto;
+      border: 2px solid var(--primary-light);
+    }
+    #share-card .sc-header { text-align: center; margin-bottom: 20px; }
+    #share-card .sc-header .sc-label { font-size: 13px; color: var(--text-light); }
+    #share-card .sc-header .sc-code {
+      font-size: 44px; font-weight: 900;
+      background: linear-gradient(135deg, var(--primary), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+    }
+    #share-card .sc-header .sc-title { font-size: 22px; font-weight: 800; color: var(--primary); margin-top: 4px; }
+    #share-card .sc-header .sc-catch { font-size: 13px; color: var(--text-light); margin-top: 6px; }
+    #share-card .sc-detail {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px;
+      font-size: 13px;
+      line-height: 1.9;
+      color: var(--text);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    #share-card .sc-dims {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    #share-card .sc-dim {
+      background: #faf8f9;
+      border-radius: 10px;
+      padding: 8px 4px;
+      text-align: center;
+    }
+    #share-card .sc-dim .sc-dn { font-size: 10px; color: var(--text-light); }
+    #share-card .sc-dim .sc-ds { font-size: 16px; font-weight: 800; color: var(--primary); }
+    #share-card .sc-dim .sc-dl { font-size: 10px; color: var(--accent2); font-weight: 600; }
+    #share-card .sc-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-light);
+      border-top: 1px dashed var(--border);
+      padding-top: 14px;
+    }
+    #share-card .sc-footer .sc-qr {
+      display: inline-block;
+      width: 60px; height: 60px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      margin-top: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: #bbb;
+    }
+
+    /* 截图结果弹层 */
+    .modal-overlay {
+      display: none;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 420px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      text-align: center;
+    }
+    .modal-content h3 { font-size: 18px; margin-bottom: 12px; }
+    .modal-content p { font-size: 13px; color: var(--text-light); margin-bottom: 16px; }
+    .modal-content img { max-width: 100%; border-radius: 12px; margin-bottom: 12px; }
+    .modal-close {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: none;
+      padding: 10px 28px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* 过渡 */
+    .slide-enter { animation: slideIn 0.4s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    .slide-leave { animation: slideOut 0.3s ease forwards; }
+    @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-30px); } }
+
+    /* 响应式 */
+    @media (max-width: 400px) {
+      .cover h1 { font-size: 26px; }
+      .result-header .type-code { font-size: 38px; }
+      .constellation-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== 封面 ===== -->
+<div class="page active" id="page-cover">
+  <div class="cover">
+    <div class="cover-emoji">💕</div>
+    <h1>测测你的恋爱段位</h1>
+    <p class="subtitle">是海王还是舔狗，测测就知道</p>
+    <div class="desc">
+      <strong>测试说明</strong><br>
+      本测试基于成人依恋理论，测量五个维度： <strong>相处姿态、表达习惯、情感投入、个人节奏、依恋需求</strong>。每题 1~5 分，1=非常左边，5=非常右边。每个维度 4 题，计算平均分后：<br>
+      • 平均分 &lt; 3 → 取左侧字母<br>
+      • 平均分 &ge; 3 → 取右侧字母<br>
+      • 平均分 = 3 → 取左侧<br>
+      5 个维度组合成你的专属恋爱段位代码。
+    </div>
+    <div class="cover-tags">
+      <span>#520限定</span>
+      <span>#恋爱人格</span>
+      <span>#32种段位</span>
+      <span>#准到离谱</span>
+    </div>
+    <button class="btn" style="margin-top:30px;" onclick="goPage('info')">开始测试</button>
+  </div>
+</div>
+
+<!-- ===== 信息页 ===== -->
+<div class="page" id="page-info">
+  <div class="quiz-header">
+    <span class="back" onclick="goPage('cover')">&#8592;</span>
+    <span style="font-size:16px;font-weight:700;">填写信息</span>
+    <span style="width:36px;"></span>
+  </div>
+  <div class="info-form">
+    <div class="form-group">
+      <label>性别（可选）</label>
+      <div class="form-options" id="gender-options">
+        <label><input type="radio" name="gender" value="男">男</label>
+        <label><input type="radio" name="gender" value="女">女</label>
+        <label><input type="radio" name="gender" value="其他">其他/不愿透露</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>星座（可选）</label>
+      <div class="constellation-grid" id="constellation-options">
+        <label><input type="radio" name="constellation" value="白羊">白羊</label>
+        <label><input type="radio" name="constellation" value="金牛">金牛</label>
+        <label><input type="radio" name="constellation" value="双子">双子</label>
+        <label><input type="radio" name="constellation" value="巨蟹">巨蟹</label>
+        <label><input type="radio" name="constellation" value="狮子">狮子</label>
+        <label><input type="radio" name="constellation" value="处女">处女</label>
+        <label><input type="radio" name="constellation" value="天秤">天秤</label>
+        <label><input type="radio" name="constellation" value="天蝎">天蝎</label>
+        <label><input type="radio" name="constellation" value="射手">射手</label>
+        <label><input type="radio" name="constellation" value="摩羯">摩羯</label>
+        <label><input type="radio" name="constellation" value="水瓶">水瓶</label>
+        <label><input type="radio" name="constellation" value="双鱼">双鱼</label>
+      </div>
+    </div>
+    <button class="btn" onclick="startQuiz()">下一步</button>
+    <button class="btn skip-btn" onclick="startQuiz()">跳过，直接开始</button>
+  </div>
+</div>
+
+<!-- ===== 答题页 ===== -->
+<div class="page" id="page-quiz">
+  <div class="quiz-header">
+    <span class="back" onclick="goPage('info')">&#8592;</span>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <span class="progress-text" id="progress-text">1/20</span>
+  </div>
+  <div class="question-card" id="question-card">
+    <span class="q-dimension" id="q-dimension">相处姿态</span>
+    <div class="q-title" id="q-title">暧昧秒回</div>
+    <div class="q-subtitle" id="q-subtitle">第 1 题</div>
+    <div class="slider-container">
+      <div class="labels-row">
+        <span class="left" id="label-left">秒回："在！一直在！"</span>
+        <span class="right" id="label-right">看到但过一会儿再回，不能显得太闲</span>
+      </div>
+      <div class="slider-track" style="position:relative;">
+        <div class="slider-mid"></div>
+        <input type="range" id="q-slider" min="1" max="5" step="1" value="3" oninput="updateSlider(this.value)">
+      </div>
+      <div class="score-dots" id="score-dots">
+        <div class="score-dot" data-v="1">1</div>
+        <div class="score-dot" data-v="2">2</div>
+        <div class="score-dot active" data-v="3">3</div>
+        <div class="score-dot" data-v="4">4</div>
+        <div class="score-dot" data-v="5">5</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-outline" id="prev-btn" onclick="prevQuestion()">上一题</button>
+      <button class="btn next-btn" id="next-btn" onclick="nextQuestion()">下一题</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 加载页 ===== -->
+<div class="page" id="page-loading">
+  <div class="loading-page">
+    <div class="heart">💖</div>
+    <p>AI正在解析你的恋爱段位……</p>
+  </div>
+</div>
+
+<!-- ===== 结果页 ===== -->
+<div class="page" id="page-result">
+  <div id="result-content"></div>
+</div>
+
+<!-- ===== 截图弹层 ===== -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>长按保存图片分享</h3>
+    <p>图片已生成，长按即可保存到相册</p>
+    <div id="screenshot-container"></div>
+    <button class="modal-close" onclick="document.getElementById('modal-overlay').classList.remove('active')">关闭</button>
+  </div>
+</div>
+
+<script>
+// ===================== 数据 =====================
+const questions = [
+  { id: 1, title: "暧昧对象凌晨发\"在吗\"，你：", dimension: "相处姿态", left: "秒回：\"在！一直在！\"", right: "看到但过一会儿再回，不能显得太闲" },
+  { id: 2, title: "当你的朋友调侃你恋爱脑时，你：", dimension: "相处姿态", left: "\"为爱改变怎么了\"", right: "\"我恋爱中也很清醒\"" },
+  { id: 3, title: "TA拒绝你的线下邀约，你会", dimension: "相处姿态", left: "换个理由再约，不轻易放弃", right: "算了，下次等TA主动找我" },
+  { id: 4, title: "恋爱中，你更常说哪句话：", dimension: "相处姿态", left: "\"宝宝～我一定会对你好的～\"", right: "\"想我了？那得看你表现\"" },
+  { id: 5, title: "发现TA和别人有点暧昧，你：", dimension: "表达习惯", left: "心里难受但假装没事，行动上对TA更好", right: "直接后撤，不参与竞争" },
+  { id: 6, title: "表达爱意时，你更擅长：", dimension: "表达习惯", left: "甜言蜜语，土味情话张口就来", right: "默默做事，买好吃的、帮忙解决问题" },
+  { id: 7, title: "TA心情不好时，你会：", dimension: "表达习惯", left: "疯狂讲段子、发语音逗TA笑", right: "不说话，直接买杯奶茶塞给TA" },
+  { id: 8, title: "如果在朋友圈秀恩爱，你会：", dimension: "表达习惯", left: "小作文配九宫格，文案深情", right: "一张合照，甚至懒得发" },
+  { id: 9, title: "和TA吵架时，你经常：", dimension: "情感投入", left: "滔滔不绝，把心里话全倒出来", right: "沉默，但会默默做讨好TA的事" },
+  { id: 10, title: "TA问\"你到底爱不爱我\"，你：", dimension: "情感投入", left: "立刻输出一大段真情告白", right: "直接抱上去，或者发个红包" },
+  { id: 11, title: "你说过的恋爱承诺，通常：", dimension: "情感投入", left: "说到做到，做不到的不轻易说", right: "当时是真心的，但过后可能忘了" },
+  { id: 12, title: "你更害怕哪种情况：", dimension: "情感投入", left: "怕TA突然消失，再也不理我", right: "怕TA太粘人，让我喘不过气" },
+  { id: 13, title: "恋爱中你的理想联系频率：", dimension: "个人节奏", left: "每天不聊还叫谈恋爱嘛", right: "随缘，两三天一次就够，大家各有各的事" },
+  { id: 14, title: "如果TA一小时没回消息，你：", dimension: "个人节奏", left: "开始胡思乱想，翻TA朋友圈找线索", right: "该干嘛干嘛，忘了自己发过啥" },
+  { id: 15, title: "对异地恋的态度你更倾向：", dimension: "个人节奏", left: "短期可以每天视频报备，长期不行", right: "可以异地，各自独立，定期见面就行" },
+  { id: 16, title: "刚确立关系时，你的状态更接近：", dimension: "个人节奏", left: "打了鸡血，恨不得24小时粘着", right: "暗中观察，不轻易暴露心意" },
+  { id: 17, title: "你觉得确定关系最舒服的节奏更倾向：", dimension: "依恋需求", left: "一见钟情，认识一周内尽快关系", right: "至少了解两三个月再说，人又跑不了" },
+  { id: 18, title: "你对\"恋爱套路\"的看法更倾向：", dimension: "依恋需求", left: "讨厌套路，真心就是最大诚意", right: "适当套路只是调味剂" },
+  { id: 19, title: "你会把手机密码告诉你的伴侣吗？", dimension: "依恋需求", left: "当然！我们之间没有秘密", right: "肯定不，这是个人边界" },
+  { id: 20, title: "对于爱情，你更认同哪句话：", dimension: "依恋需求", left: "\"爱是彼此依赖\"", right: "\"爱是各自独立，互相欣赏\"" }
+];
+
+const dimMap = {
+  "相处姿态":   { left: "L", right: "H", ids: [1,2,3,4] },
+  "表达习惯":   { left: "T", right: "D", ids: [5,6,7,8] },
+  "情感投入":   { left: "R", right: "F", ids: [9,10,11,12] },
+  "个人节奏":   { left: "A", right: "C", ids: [13,14,15,16] },
+  "依恋需求": { left: "N", right: "S", ids: [17,18,19,20] }
+};
+
+const dimOrder = ["相处姿态", "表达习惯", "情感投入", "个人节奏", "依恋需求"];
+
+const results = {
+  "LTRAN": { title: "彩虹屁永动机", catchphrase: "24小时在线吹捧，TA打个哈欠你都觉得是艺术" },
+  "LTRAS": { title: "念经型地藏菩萨", catchphrase: "心里念叨一万遍，嘴上只敢说\"今天天气不错\"" },
+  "LDRAN": { title: "24小时贴心管家", catchphrase: "嘴笨但行动满分，TA说饿了你十分钟送楼下" },
+  "LDRAS": { title: "石像守护者", catchphrase: "默默守护十年如一日，但TA可能根本不知道" },
+  "LTRCN": { title: "玻璃心小公主", catchphrase: "对方语气冷淡一点，你立刻脑补80集虐恋" },
+  "LTRCS": { title: "傲娇本娇·口是心非", catchphrase: "嘴上\"谁稀罕你\"，心里\"快来看我啊\"" },
+  "LDRCN": { title: "钢铁直男/女式舔狗", catchphrase: "你送TA三吨煤，TA说\"谢谢\"然后搬去烧炕" },
+  "LDRCS": { title: "高岭之花·限定款", catchphrase: "看上去遥不可及，只对TA一个人特别" },
+  "LTFAN": { title: "影帝速成班", catchphrase: "情书三分钟一篇，甜言蜜语量产，但仔细一品都一样" },
+  "LTFAS": { title: "速溶咖啡舔狗", catchphrase: "有空时甜得蛀牙，没空时半个月不联系" },
+  "LDFAN": { title: "朋友圈表演艺术家", catchphrase: "99元玫瑰P成999，约会拍照三小时，舔的不是TA是流量" },
+  "LDFAS": { title: "节能模式舔狗", catchphrase: "偶尔记得生日发个红包就当过节，心里\"我做了啊\"" },
+  "LTFCN": { title: "海选淘汰型舔狗", catchphrase: "群发\"在吗\"，谁回就跟谁聊，但永远是被选剩的" },
+  "LTFCS": { title: "佛系海王", catchphrase: "不主动撩，但谁来撩都不拒绝，群发\"晚安\"" },
+  "LDFCN": { title: "疯狂消费型舔狗", catchphrase: "你花钱的速度比TA变心的速度还快" },
+  "LDFCS": { title: "时间管理舔狗（失败版）", catchphrase: "想学海王但天赋不够，最后把自己累成狗" },
+  "HTRAN": { title: "嘴硬心软·追妻/夫火葬场", catchphrase: "发60秒怒气语音的本质是\"我在乎你\"" },
+  "HTRAS": { title: "冰山火山·慢热大魔王", catchphrase: "看上去高冷离地三尺，微信对话框里全是emoji" },
+  "HDRAN": { title: "霸总附体·实力宠爱", catchphrase: "不说\"我爱你\"，直接送奶茶送票送下班" },
+  "HDRAS": { title: "高岭之花·专一限定款", catchphrase: "只对TA一个人特别，其他人都是空气" },
+  "HTRCN": { title: "傲娇粘人精", catchphrase: "嘴上\"别烦我\"，身体忍不住查岗" },
+  "HTRCS": { title: "冷藏式恋人", catchphrase: "三天不联系是常态，但一联系就掏心" },
+  "HDRCN": { title: "爹系/妈系恋人", catchphrase: "管你吃管你穿管你几点睡，但不说爱" },
+  "HDRCS": { title: "神秘限量版", catchphrase: "神龙见首不见尾，但每次出现都让人心动" },
+  "HTFAN": { title: "嘴炮海王·土味连环call", catchphrase: "八个聊天框同时进行，每个都是\"宝\"" },
+  "HTFAS": { title: "佛系海王·暧昧永动机", catchphrase: "不主动不拒绝不负责，主打一个缘" },
+  "HDFAN": { title: "PUA小课堂·情绪过山车", catchphrase: "今天感动TA到哭，明天突然冷淡，后天又惊喜" },
+  "HDFAS": { title: "时间管理大师·调度算法奖得主", catchphrase: "12点这个2点那个4点新人，Excel一旦泄露你就得搬家" },
+  "HTFCN": { title: "绿茶/绿箭本茶", catchphrase: "嘴上\"哥哥/姐姐好厉害\"，心里\"下一个\"" },
+  "HTFCS": { title: "人间清醒·养鱼专家", catchphrase: "知道自己在养鱼，也知道鱼知道，但大家都开心" },
+  "HDFCN": { title: "霸道总裁·病娇版", catchphrase: "\"你是我的，但我不说是你等我先说\"" },
+  "HDFCS": { title: "孤寡王者", catchphrase: "嘴上\"一个人挺好\"，心里\"谁来都不行\"" }
+};
+
+const professional = {
+  "LTRAN": { interpretation: "焦虑型依恋+高表达欲，极度需要回应来确认被爱", matches: [
+    { title: "霸总附体·实力宠爱", match: 96, quote: "霸总负责给安全感，你负责吹彩虹屁，一个敢说一个敢听。" },
+    { title: "爹系/妈系恋人", match: 88, quote: "爹系负责兜底，你负责夸，情绪价值永远不会断供。" },
+    { title: "傲娇粘人精", match: 82, quote: "一个嘴硬一个嘴甜，你夸TA的时候TA脸红但心里乐开花。" }
+  ]},
+  "LTRAS": { interpretation: "焦虑+回避混合，内心滚烫但外表佛系", matches: [
+    { title: "霸总附体·实力宠爱", match: 94, quote: "霸总直接把你从心里揪出来，不给你念经的机会。" },
+    { title: "爹系/妈系恋人", match: 86, quote: "爹系看穿你的沉默，直接问'你是不是想我了'。" },
+    { title: "冰山火山·慢热大魔王", match: 78, quote: "两个内心戏精互相解码，看谁先绷不住。" }
+  ]},
+  "LDRAN": { interpretation: "焦虑型依恋，靠付出来换取安全感", matches: [
+    { title: "高岭之花·专一限定款", match: 95, quote: "你负责伺候，TA负责高冷，一个愿打一个愿挨。" },
+    { title: "冷藏式恋人", match: 87, quote: "你递奶茶，TA说'放那儿吧'，这已经是TA最大的温柔。" },
+    { title: "傲娇粘人精", match: 80, quote: "嘴上嫌弃你管太多，身体却诚实地享受被照顾。" }
+  ]},
+  "LDRAS": { interpretation: "恐惧型依恋，渴望亲密又害怕暴露", matches: [
+    { title: "霸总附体·实力宠爱", match: 93, quote: "霸总一拳打碎你的石像外壳，直接问'你是不是喜欢我'。" },
+    { title: "嘴炮海王·土味连环call", match: 85, quote: "嘴炮负责吵，你负责沉默，至少TA永远不会让你冷场。" },
+    { title: "冰山火山·慢热大魔王", match: 79, quote: "两座冰山互相发电，虽然慢但电量持久。" }
+  ]},
+  "LTRCN": { interpretation: "高度焦虑，情绪易受外界影响", matches: [
+    { title: "霸总附体·实力宠爱", match: 97, quote: "霸总一句话'有我在'，胜过你吃100颗定心丸。" },
+    { title: "爹系/妈系恋人", match: 91, quote: "爹系连你几点睡都管，玻璃心终于有了钢化膜。" },
+    { title: "高岭之花·专一限定款", match: 84, quote: "TA的专一让你知道'我不会走'，玻璃心终于可以放下。" }
+  ]},
+  "LTRCS": { interpretation: "回避型依恋，用冷漠保护自己", matches: [
+    { title: "霸总附体·实力宠爱", match: 95, quote: "霸总专治各种傲娇，你越说'滚'TA越要贴过来。" },
+    { title: "嘴硬心软·追妻/夫火葬场", match: 89, quote: "两个嘴硬王者互相伤害，最后抱在一起哭。" },
+    { title: "爹系/妈系恋人", match: 83, quote: "爹系看穿你的冷漠伪装，直接揭穿'你就是想我了'。" }
+  ]},
+  "LDRCN": { interpretation: "焦虑但表达障碍，爱得笨拙", matches: [
+    { title: "玻璃心小公主", match: 90, quote: "钢铁的笨拙恰好接住了玻璃的脆弱，绝配。" },
+    { title: "傲娇粘人精", match: 86, quote: "你越笨TA越嫌弃，但TA越嫌弃你越来劲。" },
+    { title: "爹系/妈系恋人", match: 80, quote: "两个行动派凑一起，谁也不会嫌谁不说情话。" }
+  ]},
+  "LDRCS": { interpretation: "专一且回避，认定就是一辈子", matches: [
+    { title: "高岭之花·专一限定款", match: 98, quote: "两座高岭之花隔空对望，外人看来是冰山，彼此知道心里在着火。" },
+    { title: "冰山火山·慢热大魔王", match: 88, quote: "两个慢热怪一起 warming up，虽然慢但温度正好。" },
+    { title: "霸总附体·实力宠爱", match: 82, quote: "霸总欣赏你的专一，你欣赏霸总的直接。" }
+  ]},
+  "LTFAN": { interpretation: "焦虑+戏精，用套路掩饰不安", matches: [
+    { title: "嘴炮海王·土味连环call", match: 94, quote: "两个戏精互相飙戏，谁的剧本更精彩谁就赢了。" },
+    { title: "朋友圈表演艺术家", match: 90, quote: "一个负责演，一个负责拍，朋友圈最佳拍档。" },
+    { title: "PUA小课堂·情绪过山车", match: 85, quote: "两个导演互相导戏，谁先把对方演哭算谁厉害。" }
+  ]},
+  "LTFAS": { interpretation: "回避倾向的舔狗，间歇性热情", matches: [
+    { title: "佛系海王·暧昧永动机", match: 92, quote: "一个热得快凉得也快，一个永远不冷不热，频率意外合拍。" },
+    { title: "影帝速成班", match: 86, quote: "你忽冷忽热，TA以为你在演，其实你真的只是忙。" },
+    { title: "时间管理大师·调度算法奖得主", match: 81, quote: "时间管理大师帮你排班，确保你的热情不会撞车。" }
+  ]},
+  "LDFAN": { interpretation: "焦虑且表演型，需要外界认可", matches: [
+    { title: "绿茶/绿箭本茶", match: 93, quote: "一个负责演，一个负责品，茶香四溢。" },
+    { title: "影帝速成班", match: 89, quote: "你负责拍，TA负责演，组合出道直接C位。" },
+    { title: "嘴炮海王·土味连环call", match: 84, quote: "你发朋友圈，TA负责在下面刷评论，流量管够。" }
+  ]},
+  "LDFAS": { interpretation: "高回避低焦虑，感情里节能环保", matches: [
+    { title: "佛系海王·暧昧永动机", match: 95, quote: "一个省电，一个佛系，两个人可以躺在沙发上一整天不说话。" },
+    { title: "冷藏式恋人", match: 88, quote: "你三天不联系，TA三天不回复，谁也没觉得哪里不对。" },
+    { title: "孤寡王者", match: 82, quote: "两个人凑一起，孤寡减半，虽然还是不太像谈恋爱。" }
+  ]},
+  "LTFCN": { interpretation: "焦虑且不专注，容易自我怀疑", matches: [
+    { title: "绿茶/绿箭本茶", match: 91, quote: "海选遇上绿茶，谁撒的网更大还真不好说。" },
+    { title: "佛系海王·暧昧永动机", match: 87, quote: "你群发的'在吗'，TA群回的'晚安'，谁也不亏。" },
+    { title: "人间清醒·养鱼专家", match: 83, quote: "养鱼专家看你广撒网，默默给你递了本《鱼塘管理学》。" }
+  ]},
+  "LTFCS": { interpretation: "回避且戏精，用暧昧维持距离", matches: [
+    { title: "人间清醒·养鱼专家", match: 94, quote: "养鱼专家遇上佛系海王，相视一笑：'你也是来喂鱼的？'" },
+    { title: "佛系海王·暧昧永动机", match: 90, quote: "两个佛系海王凑一桌，谁也不主动，但谁也不走。" },
+    { title: "时间管理大师·调度算法奖得主", match: 85, quote: "时间管理大师帮你排好了时间表，确保每条鱼都有空位。" }
+  ]},
+  "LDFCN": { interpretation: "焦虑型，用物质填补安全感", matches: [
+    { title: "霸道总裁·病娇版", match: 93, quote: "一个花钱如流水，一个占有欲爆棚，'花我的钱，你就是我的'。" },
+    { title: "疯狂消费型舔狗", match: 89, quote: "两个消费狂凑一起，银行看了连夜改密码。" },
+    { title: "朋友圈表演艺术家", match: 84, quote: "你负责买，TA负责拍，朋友圈点赞数直接起飞。" }
+  ]},
+  "LDFCS": { interpretation: "混乱型依恋，又怕孤独又怕亲密", matches: [
+    { title: "时间管理大师·调度算法奖得主", match: 96, quote: "失败版遇上大师版，直接拜师学艺，Excel从此不乱。" },
+    { title: "人间清醒·养鱼专家", match: 88, quote: "养鱼专家看你手忙脚乱，默默递上一本《多线程恋爱指南》。" },
+    { title: "佛系海王·暧昧永动机", match: 82, quote: "佛系海王拍拍你肩膀：'兄弟，少聊几个，心不累。'" }
+  ]},
+  "HTRAN": { interpretation: "焦虑型但伪装高冷，内耗严重", matches: [
+    { title: "傲娇粘人精", match: 95, quote: "一个嘴硬一个傲娇，吵架像说相声，和好像演偶像剧。" },
+    { title: "霸总附体·实力宠爱", match: 89, quote: "霸总不吃你嘴硬这套，直接把你扛上车：'别装了，回家。'" },
+    { title: "爹系/妈系恋人", match: 84, quote: "爹系一边骂你作，一边给你煮红糖水，嘴硬心软2.0。" }
+  ]},
+  "HTRAS": { interpretation: "回避型，用慢热掩饰不安", matches: [
+    { title: "冷藏式恋人", match: 93, quote: "冰山遇上冷藏室，温度刚好，谁也不会被冻伤。" },
+    { title: "高岭之花·专一限定款", match: 87, quote: "两座冰山一起升温，虽然慢但彼此知道对方不会化。" },
+    { title: "爹系/妈系恋人", match: 82, quote: "爹系有耐心等你融化，你融化后才发现TA已经烤了你三年。" }
+  ]},
+  "HDRAN": { interpretation: "焦虑+行动，控制欲强但负责", matches: [
+    { title: "玻璃心小公主", match: 96, quote: "玻璃心需要霸总的安全感，霸总需要玻璃心的崇拜，完美闭环。" },
+    { title: "傲娇粘人精", match: 91, quote: "霸总专治傲娇，你越说'不要'TA越要给你。" },
+    { title: "海选淘汰型舔狗", match: 85, quote: "霸总直接把你从海选里捞出来：'别选了，就你了。'" }
+  ]},
+  "HDRAS": { interpretation: "安全偏回避，沉稳且忠诚", matches: [
+    { title: "高岭之花·限定款", match: 97, quote: "两座高岭之花隔空对望，外人看来是冰山，彼此知道心里在着火。" },
+    { title: "石像守护者", match: 88, quote: "石像守护高岭之花，一个不动一个高冷，画面意外地和谐。" },
+    { title: "神秘限量版", match: 83, quote: "两个神秘人互相猜谜，猜了一辈子也没猜完。" }
+  ]},
+  "HTRCN": { interpretation: "焦虑型，用傲娇掩饰依赖", matches: [
+    { title: "嘴硬心软·追妻/夫火葬场", match: 94, quote: "两个傲娇互啄，谁先开口谁就输，但都输得心甘情愿。" },
+    { title: "霸总附体·实力宠爱", match: 90, quote: "霸总不吃傲娇这套，直接壁咚：'你到底想怎样？'" },
+    { title: "爹系/妈系恋人", match: 85, quote: "爹系看穿你的傲娇，一边嫌弃你一边给你盖被子。" }
+  ]},
+  "HTRCS": { interpretation: "回避型，低频但深度的亲密", matches: [
+    { title: "冰山火山·慢热大魔王", match: 92, quote: "冷藏室遇上冰山，谁也不会嫌谁冷，甚至觉得温度刚好。" },
+    { title: "高岭之花·专一限定款", match: 86, quote: "两个高冷怪互相尊重距离，偶尔联网传个文件就满足了。" },
+    { title: "节能模式舔狗", match: 81, quote: "你三天不联系，TA觉得正常，省电模式从不抱怨。" }
+  ]},
+  "HDRCN": { interpretation: "焦虑+控制，用照顾表达爱", matches: [
+    { title: "玻璃心小公主", match: 94, quote: "玻璃心需要爹系照顾，爹系需要玻璃心来管，互相需要。" },
+    { title: "傲娇粘人精", match: 89, quote: "爹系看穿傲娇的伪装，直接投喂，傲娇一边骂一边吃。" },
+    { title: "嘴硬心软·追妻/夫火葬场", match: 85, quote: "爹系一边唠叨你，一边给你收拾烂摊子，嘴上嫌弃手上不停。" }
+  ]},
+  "HDRCS": { interpretation: "安全偏回避，沉稳有魅力", matches: [
+    { title: "高岭之花·专一限定款", match: 93, quote: "神秘人欣赏高岭之花的高冷，高岭之花好奇神秘人的秘密。" },
+    { title: "冰山火山·慢热大魔王", match: 87, quote: "两个慢热怪一起升温，虽然慢但彼此尊重对方的节奏。" },
+    { title: "冷藏式恋人", match: 82, quote: "神秘人住冷藏室，谁也别想找到TA，但TA偶尔会发个定位。" }
+  ]},
+  "HTFAN": { interpretation: "焦虑型海王，用多线获得安全感", matches: [
+    { title: "人间清醒·养鱼专家", match: 94, quote: "养鱼专家看你八个聊天框，默默给你升级了服务器。" },
+    { title: "绿茶/绿箭本茶", match: 90, quote: "嘴炮遇上绿茶，一个说一个演，谁也不拆穿谁。" },
+    { title: "影帝速成班", match: 86, quote: "两个戏精同台竞技，看谁先把对方的'唯一'演哭。" }
+  ]},
+  "HTFAS": { interpretation: "回避型海王，害怕承诺", matches: [
+    { title: "人间清醒·养鱼专家", match: 93, quote: "佛系海王遇上养鱼专家，一个养鱼一个喂鱼，配合默契。" },
+    { title: "佛系海王·暧昧永动机", match: 89, quote: "两个佛系海王互不打扰，各自养鱼，偶尔交流一下饲料配方。" },
+    { title: "节能模式舔狗", match: 84, quote: "你佛系TA省电，两个人可以一个月不联系，见面还在同一个频道。" }
+  ]},
+  "HDFAN": { interpretation: "混乱型，既焦虑又回避", matches: [
+    { title: "影帝速成班", match: 91, quote: "过山车导演遇上影帝，一个设计情节一个负责演，票房保底。" },
+    { title: "朋友圈表演艺术家", match: 87, quote: "你负责制造情绪波动，TA负责拍照发朋友圈，双赢。" },
+    { title: "嘴炮海王·土味连环call", match: 83, quote: "两个操控狂互相试探，最后发现对方也在看《心理学导论》。" }
+  ]},
+  "HDFAS": { interpretation: "高回避且戏精，情感隔离", matches: [
+    { title: "佛系海王·暧昧永动机", match: 90, quote: "时间管理大师帮佛系海王排班，确保每条鱼的档期不冲突。" },
+    { title: "人间清醒·养鱼专家", match: 86, quote: "养鱼专家看了你的Excel，当场拜师：'这才是专业。'" },
+    { title: "速溶咖啡舔狗", match: 82, quote: "时间管理大师帮你规划热情曲线，确保忽冷忽热也有节奏。" }
+  ]},
+  "HTFCN": { interpretation: "焦虑+表演，需要外界认可", matches: [
+    { title: "人间清醒·养鱼专家", match: 92, quote: "养鱼专家给你发了个奖杯：'年度最佳茶艺师'。" },
+    { title: "嘴炮海王·土味连环call", match: 88, quote: "绿茶嘴炮互相夸，表面'哥哥好厉害'，心里'下一个更乖'。" },
+    { title: "朋友圈表演艺术家", match: 84, quote: "一个负责茶，一个负责拍，朋友圈最佳内容创作组合。" }
+  ]},
+  "HTFCS": { interpretation: "高回避且通透，情感隔离", matches: [
+    { title: "佛系海王·暧昧永动机", match: 94, quote: "养鱼专家遇上佛系海王，一个数鱼一个喂鱼，分工明确。" },
+    { title: "绿茶/绿箭本茶", match: 90, quote: "养鱼专家看透了绿茶，但选择不拆穿，毕竟都是同行。" },
+    { title: "时间管理大师·调度算法奖得主", match: 86, quote: "养鱼专家和时间管理大师交换了Excel，发现时间表还能更密。" }
+  ]},
+  "HDFCN": { interpretation: "混乱型，控制欲强又不敢表达", matches: [
+    { title: "疯狂消费型舔狗", match: 92, quote: "病娇霸总遇上消费狂，'花我的钱，买你的命，你就是我的'。" },
+    { title: "PUA小课堂·情绪过山车", match: 88, quote: "病娇遇上过山车设计师，一个控制一个操控，看谁先把对方逼疯。" },
+    { title: "霸总附体·实力宠爱", match: 85, quote: "两个霸总互相控制，最后发现公司法人写的是对方名字。" }
+  ]},
+  "HDFCS": { interpretation: "极高度回避，恐惧亲密", matches: [
+    { title: "孤寡王者", match: 95, quote: "两个孤寡王者凑一起，负负得正... 并没有，还是各自孤寡。" },
+    { title: "冷藏式恋人", match: 88, quote: "冷藏室收留孤寡王者，至少这里不打扰你的孤独。" },
+    { title: "节能模式舔狗", match: 83, quote: "省电模式和孤寡王者，两个人可以躺在沙发上各自玩手机，偶尔对视一眼——'原来你也在这里'。" }
+  ]}
+};
+
+const constellationBuffs = {
+  '白羊': '你的恋爱风格像白羊的火焰——点燃只需要一秒，熄灭可能要三年。',
+  '金牛': '你的恋爱风格像金牛的老树——生长慢但根系深，拔出来会带一吨土。',
+  '双子': '你的恋爱风格像双子的WiFi——信号满格时谁都连得上，突然断联谁也没辙。',
+  '巨蟹': '你的恋爱风格像巨蟹的壳——看着硬邦邦，敲一敲里面全是软糯。',
+  '狮子': '你的恋爱风格像狮子的鬃毛——必须光鲜亮丽，但下雨天也会淋成落汤鸡。',
+  '处女': '你的恋爱风格像处女的清单——嘴上列了100条标准，遇到那个人全作废。',
+  '天秤': '你的恋爱风格像天秤的摇摆——左边是理性，右边是感性，你在中间晕船。',
+  '天蝎': '你的恋爱风格像天蝎的毒针——平时藏得好好的，一扎一个准。',
+  '射手': '你的恋爱风格像射手的箭——瞄准的时候最帅，射出去就懒得管了。',
+  '摩羯': '你的恋爱风格像摩羯的日程表——表面上精确到分钟，备注栏里全是对TA的想念。',
+  '水瓶': '你的恋爱风格像水瓶的外星信号——地球人还在解码，你已经切到下一个频道了。',
+  '双鱼': '你的恋爱风格像双鱼的眼泪——说来就来，演着演着自己都信了。'
+};
+
+const details = {
+  "LTRAN": "你上辈子一定是个救生员——因为你随时随地都在\"吹\"。TA发个自拍，你写800字赏析；TA打个喷嚏，你觉得是命运在敲门。你的恋爱词典里没有\"普通\"二字，TA喝口水你都能夸出\"普罗米修斯盗火般的英勇\"。你的依恋模式属于高度焦虑，需要不断通过表达来确认\"我还被爱着\"。缺点是：对方可能会被你夸到社恐。建议偶尔闭嘴，让TA也喘口气。适合找个安全型对象，能稳定接收你的彩虹屁还不膨胀。",
+  "LTRAS": "你的内心戏足以养活一整个横店。TA多看了你一眼，你已经在脑子里办完了婚礼；TA三天没理你，你连墓志铭都想好了。但表面上，你只云淡风轻发一句\"吃了吗\"。这是焦虑和回避的混合——内心滚烫，行动为零。你像地藏菩萨一样\"地狱不空不成佛\"，TA不主动你绝不先动。建议：把脑子里小作文的1%说出来，对方可能早就想接你的戏了。适合直球选手，能一把薅住你问\"你到底啥意思\"。",
+  "LDRAN": "你恋爱就像开了一家五星级酒店，服务至上，24小时待命。TA说\"有点渴\"，你十分钟后出现在楼下递奶茶；TA说\"好累\"，你已经预约好了按摩。你的依恋模式是焦虑型靠付出来换取安全感——你总觉得\"只要我对TA够好，TA就不会走\"。问题是，对方可能习惯了被伺候，忘了你也要被爱。建议：偶尔罢工一天，看看TA会不会反过来问你\"你今天怎么不关心我了\"。适合懂得感恩的伴侣，而不是把你当免费保姆的人。",
+  "LDRAS": "你是恋爱界的\"兵马俑\"——站在那里一动不动，但心里全是戏。你可能偷偷记着TA的生日三年，送礼物时却假装\"顺手买的\"；你可能每天翻TA朋友圈八遍，却从来不点赞。你的恐惧型依恋让你渴望亲密又害怕暴露，只好用沉默来保护自己。缺点是：TA可能永远不知道你喜欢过TA。建议：把你那张冷脸稍微融化一点，哪怕只是多说一句\"我今天想你了\"。适合直球选手，能直接戳破你的伪装，问\"你是不是喜欢我\"。",
+  "LTRCN": "你的心是全世界最灵敏的地震仪，TA语气稍微降温0.5度，你就能感受到里氏8.0级的情感地震。TA回\"嗯\"不回\"嗯嗯\"，你能失眠一整晚分析\"是不是我哪里做错了\"。这是典型的高焦虑依恋，情绪完全被对方的风吹草动牵动。你需要的不是更甜的恋爱，而是一个情绪稳定、像泰山一样岿然不动的伴侣。建议：每天对自己说三遍\"TA不回消息可能只是在拉屎\"，能救你半条命。",
+  "LTRCS": "你的嘴巴装了反向开关。明明想TA想到发疯，发出去的消息却是\"别烦我\"；明明收到礼物开心得转圈，说出来的话是\"就这？\"你的回避型依恋让你害怕示弱，于是用冷漠来武装自己。但午夜梦回时，你会对着TA的朋友圈偷偷流泪。建议：试着把\"滚\"换成\"谢谢你\"，把\"随便你\"换成\"其实我希望你来\"。适合能读懂你潜台词的安全型，他们知道你的每句狠话背后都是\"快来抱我\"。",
+  "LDRCN": "你是恋爱界的\"推土机\"——爱得很笨，但很猛。TA说\"最近胖了\"，你回答\"是啊\"；TA说\"感冒了\"，你回答\"多喝热水\"。你的焦虑表达障碍让你说不出甜言蜜语，只会默默给TA买药、修电脑、搬行李。你的优点是忠诚，缺点是容易把对方气走。建议：在行动之前加一句\"我担心你\"，效果翻倍。适合不嫌弃你笨拙、愿意教你浪漫的人，TA会把你这块铁慢慢捂热。",
+  "LDRCS": "你看起来像不好惹的高岭之花，对谁都冷冰冰，只有对TA——也只对TA一个人，会露出罕见的温柔。你的专一且回避型让你不屑于社交，所有热情都锁在一个人身上。缺点是：万一那个人不珍惜你，你的世界会塌。建议：不要把鸡蛋放在一个篮子里，多交几个朋友，对心脏好。适合同样专一且不介意你冷脸的人，两人可以组一个\"外人勿近\"CP。",
+  "LTFAN": "你恋爱就像在演《演员的诞生》，三分钟写一篇情书，五分钟编一个浪漫故事，眼泪说流就流。你的焦虑+戏精属性让你用套路来掩饰不安——你怕真情实感被拒绝，所以先演一遍\"深情\"。问题是，你的台词背得太熟了，每次哭的点都一样。建议：偶尔忘词一次，露出真实的慌张，反而更可爱。适合同样喜欢玩闹的戏精，你们可以互相飙戏，看谁先笑场。",
+  "LTFAS": "你恋爱就像速溶咖啡——有热水（有空）的时候甜得蛀牙，没热水（没空）的时候颗粒无收。你可能这周疯狂表白，下周人间蒸发。这是回避倾向的间歇性热情，你自己也搞不清到底喜不喜欢TA。建议：在下头之前先问自己\"我到底是真的忙，还是怕深入关系\"。适合同样忽冷忽热的人，两人可以比赛谁先凉；或者找个心特别大的，怎么折腾都不走。",
+  "LDFAN": "你恋爱不是为了TA，是为了你的朋友圈观众。99元的玫瑰P成999，约会两小时拍照占了一百分钟。你的焦虑且表演型让你需要外界的点赞来证明\"我有人爱\"。但夜深人静时，你看着精修图，心里知道现实没那么甜。建议：试着发一张未经P图的合照，看看还有没有人点赞。适合能给你点赞且不戳穿你的人——毕竟，一个愿打一个愿挨。",
+  "LDFAS": "你是恋爱界的\"省电模式\"。生日？发个红包当过节了。纪念日？哦对，然后没了。你的高回避低焦虑让你觉得恋爱就像定期维护的机器，到了节点上点油就行。但你的TA可能觉得\"你心里根本没有我\"。建议：偶尔超频一次，比如突然出现在TA楼下，哪怕只是送根烤肠。适合同样佛系的人，两个人可以躺在沙发上各玩各的手机，偶尔对视一笑——\"今天我们相爱了吗？\"\"嗯，爱了。\"",
+  "LTFCN": "你恋爱就像参加海选，群发\"在吗\"，谁回你就跟谁聊。但你总是被选剩的那个——因为你的热情太分散，没有一个人觉得自己是\"特例\"。这是焦虑且不专注的典型表现，你害怕落单，所以广撒网，结果网破了。建议：下决心只留一条鱼，把群发的文案改成专属的\"其实我只想找你\"。适合能给你明确\"选中\"信号的人，TA的一句\"我也只找你\"能治好你的海选病。",
+  "LTFCS": "你是恋爱界的\"禅宗大师\"——不主动撩，但谁来撩都不拒绝；不主动说爱，但\"晚安\"群发得挺溜。你的回避且戏精让你用暧昧来维持安全距离，既享受被喜欢的感觉，又不用负责。建议：问自己一个灵魂问题——如果所有鱼同时上岸了，你选谁？答案是：你一个都不会选，因为真正怕的是上岸后的干涸。适合同样想玩不想负责的人，互相养鱼，互不亏欠。",
+  "LDFCN": "你的恋爱信条是\"爱TA就为TA花光所有\"。TA随口说想要什么，你立刻下单；TA过生日，你恨不得买辆特斯拉。你的焦虑型用物质来填补安全感的无底洞，但买完那一瞬间的快感过去后，空虚反而更大。建议：下次想花钱的时候，先把钱转给朋友，冷静三天再说。适合经济适用型伴侣，或者比你更能花的人——后者会让你发现，原来自己也是被舔的那个。",
+  "LDFCS": "你想学海王，但天赋不够。你试图同时聊三个人，结果A的消息回成B的，B的礼物送成了C的，最后三个人都拉黑了你。你的混乱型依恋让你既怕孤独又怕亲密，只好用多线程来麻痹自己。建议：承认自己不是当海王的料，回归单线程，从好好回一个人的消息开始。适合一个能带你上岸的安全型，TA会告诉你：\"不用养鱼，有我一条就够了。\"",
+  "HTRAN": "你发60秒怒气语音的本质是\"我在乎你\"。你嘴上说\"分手就分手\"，心里在喊\"快挽留我\"；你删了TA的微信，凌晨三点又偷偷加回来。这是焦虑型但伪装高冷，你的内耗足够点亮一座城市。建议：下次生气的时候，把骂人的话换成\"你知不知道我很担心你\"，能少走90%的弯路。适合能看穿你伪装的人，TA会在你摔门后跟出来，说\"别装了，上车\"。",
+  "HTRAS": "你看起来是高冷得离地三尺的冰山，微信对话框里却全是emoji和叹号。你可能三个月才约TA一次，但每次见面都掏心掏肺。这是回避型用慢热来掩饰不安——你怕太快会失控，所以故意踩刹车。建议：把三月的周期缩短到一月，不然TA可能等不及就跑了。适合长期陪伴且有耐心的安全型，TA会像太阳一样慢慢把你烤化，还不嫌你慢。",
+  "HDRAN": "你恋爱就像在演霸道总裁，不说\"我爱你\"，但直接送奶茶、送伞、送下班、送钥匙。你的焦虑+行动让你控制欲有点强——你给TA安排好一切，但从不问TA想不想要。建议：在\"为你好\"之前，先问一句\"你需要吗\"。适合愿意被安排的小鸟依人型，TA享受你的照顾，你享受被依赖，两人正好配对。",
+  "HDRAS": "你是所有前任列表里的\"白月光\"——不是因为你完美，而是因为你太难搞定了。你只对那一个人特别，其他人全是空气。你的安全偏回避让你沉稳又忠诚，缺点是别人觉得你太冷。建议：偶尔对无关的人也笑一下，免得被传\"有社交障碍\"。适合同样专一的伴侣，两个人可以组一个\"外人勿近\"的双人堡垒。",
+  "HTRCN": "你的嘴上装了一把锁，锁上写着\"别烦我\"，但你的行为是：每隔五分钟看一次TA的微信步数，TA一发朋友圈你秒赞。这是焦虑型用傲娇掩饰依赖——你越喜欢一个人，嘴上就越嫌弃。建议：下次想说\"你怎么又来了\"的时候，改成\"你来啦，真好\"。适合能接住你所有口是心非的人，TA会说\"我知道你想我了，来抱一个\"。",
+  "HTRCS": "你的恋爱原则是\"低频但深度\"。你可能三天不联系，但一联系就聊到凌晨四点。你的回避型让你需要大量的独处时间，不是不爱，而是爱的方式比较\"冷\"。缺点是：对方可能以为你已经分手了。建议：在消失前发一条\"我去闭关了，三天后回来\"，给对方一个心理预期。适合同样独立且不粘人的人，两人可以像两台电脑，偶尔连一下网，传完文件就断开。",
+  "HDRCN": "你恋爱就像养了一个孩子——管TA吃、管TA穿、管TA几点睡、管TA交什么朋友。你嘴上不说爱，但行动上全是控制。这是焦虑+控制，你用\"照顾\"来表达爱，但对方可能觉得\"窒息\"。建议：把\"你不许\"改成\"我建议\"，效果完全不同。适合愿意被照顾且不反感管束的人，TA会觉得你是世界上最靠谱的伴侣。",
+  "HDRCS": "你神龙见首不见尾，朋友圈半年不发一条，但每次出现都让人眼前一亮。你的安全偏回避让你自带神秘感，你的独立和沉稳反而很有魅力。缺点是：你可能太低调，导致喜欢你的人以为你已婚了。建议：偶尔高调一次，比如发一张自拍配文\"单身，问价\"。适合同样有自己世界的独立人格，两人可以各自精彩，偶尔交汇。",
+  "HTFAN": "你的手机里存着八个聊天框，每个置顶都叫\"宝贝\"。你对A说\"你是我的唯一\"，对B说\"你是我最特别的人\"，对C说\"我从来没有这样心动过\"。你的焦虑型海王用多线来获得安全感——你怕孤单一人的话，会死。建议：把\"宝贝\"改成备注名，以免翻车。适合能让你收心的人，或者比你更海的人——后者会让你体验一下\"被养鱼\"的滋味。",
+  "HTFAS": "你是恋爱界的\"扫地僧\"——不主动撩，但谁来撩都不拒绝；不主动约，但谁约都去。你的信条是\"不主动、不拒绝、不负责\"。这是回避型海王，你害怕承诺，所以永远停留在暧昧的舒适区。建议：问自己——\"如果所有人都上岸了，我是开心还是害怕？\"答案会告诉你真相。适合同样不想负责的玩伴，两人可以玩一辈子暧昧，谁也不提\"我们到底是什么关系\"。",
+  "HDFAN": "你是恋爱界的\"过山车设计师\"。今天把TA感动到哭，明天突然冷暴力，后天又来个惊喜。你的混乱型依恋让你既焦虑又回避，你控制TA的情绪来填补自己的不安全感。缺点是：TA可能会被你搞得精神分裂。建议：去心理咨询室坐坐，比折腾别人省钱。适合对象：除非你想受虐，否则请远离。这不是爱，是操控。",
+  "HDFAS": "你是恋爱界的罗志祥优秀毕业生。你的Excel表格精确到分钟：12点-14点陪A，14点-16点陪B，16点-18点陪C。礼物群发，情话批量复制。你的高回避且戏精让你情感隔离，你觉得所有人都是NPC。建议：小心Excel泄露，否则你可能需要连夜搬家。适合另一个时间管理大师，两人可以比赛谁的时间表更密——最后一起猝死在工位上。",
+  "HTFCN": "你的嘴上永远挂着\"哥哥/姐姐你好厉害\"，心里想着\"下一个\"。你的焦虑+表演让你需要不断地被喜欢来证明自己的价值。你享受被追逐的快感，但永远不会停下脚步。建议：试着认真回应一个人的喜欢，哪怕只试一次。适合喜欢被夸且不介意虚情的人，双方各取所需，演完就散。",
+  "HTFCS": "你是恋爱界的\"冷眼观察家\"。你知道自己在养鱼，也知道鱼知道你在养鱼，但大家都开心。你的高回避且通透让你把恋爱当成一种社交游戏，不投入真情就不会受伤。建议：偶尔输一次，试试看为一个人患得患失的感觉，那才是活着。适合同样清醒的游戏玩家，两人可以一边养鱼一边互相拆穿——\"你今天给几个宝贝发了晚安？\"\"加上你，三个。\"",
+  "HDFCN": "你是恋爱界的\"病娇天花板\"。你说\"你是我的\"，但从来不主动说\"我爱你\"；你吃醋吃到发疯，却假装\"我不在乎\"。你的混乱型让你控制欲极强又不敢表达，于是用忽冷忽热来折磨对方。建议：把\"你是我的\"改成\"我是你的\"，病就好了大半。适合能直球打破你防线的人，TA会说\"别装了，你就是想跟我好\"。",
+  "HDFCS": "你是恋爱界的\"孤寡冠军\"。你嘴上说\"一个人挺好，自由自在\"，心里想着\"谁来都不行，都配不上我\"。你的极高度回避让你恐惧亲密，你的骄傲其实是保护壳。你深夜刷到情侣视频会冷笑，但转发的文案是\"太假了\"。建议：尝试接受一次不完美的约会，对方不用100分，60分就够了。适合对象：除非你想挑战不可能，否则放过彼此。孤寡王者需要的不是恋人，是心理医生。"
+};
+
+const avatarConfig = {
+  'LTRAN': { m: 'big-smile', e: '<path d="M130 55 Q145 40 160 55" stroke="#ff8fa3" stroke-width="2" fill="none"/><circle cx="142" cy="47" r="3" fill="#ff8fa3"/><circle cx="152" cy="52" r="2" fill="#ff8fa3"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🌈 彩虹屁++</text>' },
+  'LTRAS': { m: 'flat', e: '<line x1="75" y1="115" x2="85" y2="105" stroke="#ffd1d9" stroke-width="3" stroke-linecap="round"/><line x1="125" y1="115" x2="115" y2="105" stroke="#ffd1d9" stroke-width="3" stroke-linecap="round"/><circle cx="100" cy="45" r="8" fill="none" stroke="#ffd1d9" stroke-width="2"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🙏 念经中</text>' },
+  'LDRAN': { m: 'smile', e: '<rect x="130" y="100" width="24" height="16" rx="4" fill="#ff8fa3"/><circle cx="142" cy="108" r="4" fill="#fff"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🧋 管家</text>' },
+  'LDRAS': { m: 'flat', e: '<path d="M70 60 L75 70 M130 60 L125 70 M60 130 L65 140 M140 130 L135 140" stroke="#ccc" stroke-width="2"/><rect x="75" y="50" width="8" height="15" fill="#ccc"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🗿 石像</text>' },
+  'LTRCN': { m: 'sad', e: '<path d="M80 65 L85 70 M120 65 L115 70" stroke="#6cf" stroke-width="2"/><circle cx="82" cy="72" r="2" fill="#6cf"/><circle cx="118" cy="72" r="2" fill="#6cf"/><path d="M95 115 L100 125 L105 115" stroke="#e85d75" stroke-width="1.5" fill="none"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">💔 玻璃心</text>' },
+  'LTRCS': { m: 'angry', e: '<path d="M80 70 Q85 65 90 70" stroke="#e85d75" stroke-width="1.5" fill="none"/><path d="M110 70 Q115 65 120 70" stroke="#e85d75" stroke-width="1.5" fill="none"/><ellipse cx="82" cy="90" rx="6" ry="3" fill="#ff8fa3" opacity="0.5"/><ellipse cx="118" cy="90" rx="6" ry="3" fill="#ff8fa3" opacity="0.5"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">😤 傲娇</text>' },
+  'LDRCN': { m: 'small', e: '<rect x="72" y="55" width="8" height="12" fill="#ccc"/><rect x="120" y="55" width="8" height="12" fill="#ccc"/><rect x="135" y="95" width="18" height="22" rx="3" fill="#8ec"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🧱 钢铁</text>' },
+  'LDRCS': { m: 'smile', e: '<path d="M70 130 L80 120 L90 130" stroke="#8ec" stroke-width="2" fill="none"/><path d="M110 130 L120 120 L130 130" stroke="#8ec" stroke-width="2" fill="none"/><circle cx="75" cy="55" r="4" fill="#8ec" opacity="0.6"/><circle cx="125" cy="60" r="3" fill="#8ec" opacity="0.6"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">❄️ 高冷</text>' },
+  'LTFAN': { m: 'big-smile', e: '<circle cx="100" cy="55" r="12" fill="none" stroke="#ffd700" stroke-width="2"/><path d="M88 55 L92 55 M108 55 L112 55 M100 43 L100 47 M100 63 L100 67" stroke="#ffd700" stroke-width="2"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🎭 影帝</text>' },
+  'LTFAS': { m: 'smile', e: '<rect x="135" y="95" width="16" height="20" rx="3" fill="#c96"/><ellipse cx="143" cy="90" rx="5" ry="8" fill="#ccc" opacity="0.4"/><ellipse cx="148" cy="88" rx="4" ry="6" fill="#ccc" opacity="0.3"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">☕ 速溶</text>' },
+  'LDFAN': { m: 'big-smile', e: '<rect x="130" y="85" width="20" height="30" rx="3" fill="#333"/><rect x="133" y="88" width="14" height="20" fill="#fff"/><circle cx="140" cy="108" r="3" fill="#333"/><path d="M125 80 L135 75" stroke="#ffd700" stroke-width="2"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">📸 表演</text>' },
+  'LDFAS': { m: 'flat', e: '<rect x="135" y="50" width="22" height="12" rx="3" fill="#ccc"/><rect x="137" y="52" width="8" height="8" fill="#6c6"/><rect x="147" y="52" width="8" height="8" fill="#ccc"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🔋 节能</text>' },
+  'LTFCN': { m: 'o', e: '<rect x="70" y="110" width="14" height="22" rx="2" fill="#ccc"/><rect x="116" y="110" width="14" height="22" rx="2" fill="#ccc"/><circle cx="77" cy="118" r="3" fill="#6cf"/><circle cx="123" cy="118" r="3" fill="#6cf"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">📱 海选</text>' },
+  'LTFCS': { m: 'smile', e: '<path d="M75 115 L85 105 L95 115" stroke="#ffd1d9" stroke-width="3" stroke-linecap="round"/><path d="M105 115 L115 105 L125 115" stroke="#ffd1d9" stroke-width="3" stroke-linecap="round"/><ellipse cx="60" cy="130" rx="8" ry="4" fill="#8ec"/><ellipse cx="140" cy="135" rx="8" ry="4" fill="#8ec"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🐟 佛系</text>' },
+  'LDFCN': { m: 'big-smile', e: '<rect x="125" y="95" width="20" height="24" rx="3" fill="#e85d75" opacity="0.3"/><rect x="130" y="90" width="18" height="20" rx="3" fill="#e85d75" opacity="0.3"/><rect x="135" y="85" width="16" height="16" rx="3" fill="#e85d75" opacity="0.3"/><path d="M145 80 L150 75 M150 80 L155 75" stroke="#e85d75" stroke-width="1.5"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">💸 消费</text>' },
+  'LDFCS': { m: 'o', e: '<circle cx="70" cy="55" r="8" fill="none" stroke="#e85d75" stroke-width="2"/><circle cx="130" cy="55" r="8" fill="none" stroke="#e85d75" stroke-width="2"/><circle cx="100" cy="45" r="8" fill="none" stroke="#e85d75" stroke-width="2"/><line x1="70" y1="55" x2="70" y2="55" stroke="#e85d75" stroke-width="2"/><line x1="130" y1="55" x2="130" y2="55" stroke="#e85d75" stroke-width="2"/><line x1="100" y1="45" x2="100" y2="45" stroke="#e85d75" stroke-width="2"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">⏰ 混乱</text>' },
+  'HTRAN': { m: 'flat', e: '<rect x="85" y="92" width="30" height="14" rx="3" fill="none" stroke="#e85d75" stroke-width="2"/><circle cx="92" cy="99" r="2" fill="#e85d75"/><path d="M70 115 L80 125 L75 130" stroke="#e85d75" stroke-width="2" fill="none"/><path d="M130 115 L120 125 L125 130" stroke="#e85d75" stroke-width="2" fill="none"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🔒 嘴硬</text>' },
+  'HTRAS': { m: 'small', e: '<path d="M65 110 Q75 100 85 110 Q95 100 105 110 Q115 100 125 110 Q135 100 145 110" stroke="#8ec" stroke-width="3" fill="none"/><path d="M85 110 L90 140 L110 140 L115 110" fill="#e85d75" opacity="0.2"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🌋 冰山</text>' },
+  'HDRAN': { m: 'smile', e: '<path d="M75 115 L85 140 L115 140 L125 115" fill="#333"/><path d="M80 115 L85 135 L115 135 L120 115" fill="#fff"/><rect x="130" y="100" width="16" height="20" rx="3" fill="#e85d75"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🕶️ 霸总</text>' },
+  'HDRAS': { m: 'smile', e: '<circle cx="100" cy="50" r="10" fill="#ffd700" opacity="0.3"/><circle cx="100" cy="50" r="6" fill="#ffd700" opacity="0.5"/><path d="M60 100 L70 90 M140 100 L130 90" stroke="#ffd700" stroke-width="2"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🌙 白月光</text>' },
+  'HTRCN': { m: 'angry', e: '<path d="M60 130 Q70 110 80 130 Q90 110 100 130" stroke="#ffd1d9" stroke-width="4" stroke-linecap="round"/><path d="M100 130 Q110 110 120 130 Q130 110 140 130" stroke="#ffd1d9" stroke-width="4" stroke-linecap="round"/><ellipse cx="82" cy="88" rx="5" ry="3" fill="#ff8fa3" opacity="0.5"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🐙 粘人</text>' },
+  'HTRCS': { m: 'flat', e: '<rect x="65" y="105" width="70" height="50" rx="8" fill="#8ec" opacity="0.3"/><rect x="70" y="110" width="60" height="40" rx="6" fill="#8ec" opacity="0.2"/><path d="M75 115 L80 120 M125 115 L120 120" stroke="#8ec" stroke-width="2"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🧊 冷藏</text>' },
+  'HDRCN': { m: 'flat', e: '<path d="M80 115 L80 145 L120 145 L120 115" fill="#e85d75" opacity="0.2"/><ellipse cx="100" cy="148" rx="15" ry="6" fill="#e85d75" opacity="0.3"/><path d="M70 125 L75 130 M130 125 L125 130" stroke="#e85d75" stroke-width="2"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🍚 爹系</text>' },
+  'HDRCS': { m: 'small', e: '<path d="M70 70 Q100 50 130 70 L130 130 Q100 150 70 130 Z" fill="#333" opacity="0.15"/><circle cx="88" cy="85" r="3" fill="#333"/><circle cx="112" cy="85" r="3" fill="#333"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🎭 神秘</text>' },
+  'HTFAN': { m: 'big-smile', e: '<rect x="60" y="110" width="20" height="14" rx="3" fill="#ccc"/><rect x="120" y="110" width="20" height="14" rx="3" fill="#ccc"/><rect x="85" y="105" width="30" height="10" rx="3" fill="#ccc"/><circle cx="70" cy="117" r="3" fill="#6cf"/><circle cx="130" cy="117" r="3" fill="#6cf"/><circle cx="100" cy="110" r="3" fill="#6cf"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">💬 嘴炮</text>' },
+  'HTFAS': { m: 'smile', e: '<path d="M75 115 L85 105 L95 115" stroke="#ffd1d9" stroke-width="3" stroke-linecap="round"/><ellipse cx="65" cy="135" rx="8" ry="4" fill="#8ec"/><ellipse cx="135" cy="130" rx="8" ry="4" fill="#8ec"/><ellipse cx="100" cy="140" rx="10" ry="4" fill="#8ec"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🎣 佛系海</text>' },
+  'HDFAN': { m: 'wavy', e: '<path d="M60 100 Q80 80 100 100 Q120 120 140 100" stroke="#e85d75" stroke-width="2" fill="none"/><path d="M70 110 Q90 90 110 110 Q130 130 150 110" stroke="#ff8fa3" stroke-width="1.5" fill="none"/><circle cx="75" cy="95" r="3" fill="#e85d75"/><circle cx="125" cy="105" r="3" fill="#ff8fa3"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🎢 过山车</text>' },
+  'HDFAS': { m: 'smile', e: '<rect x="60" y="100" width="80" height="40" rx="4" fill="none" stroke="#ccc" stroke-width="1.5"/><line x1="70" y1="110" x2="130" y2="110" stroke="#ccc" stroke-width="1"/><line x1="70" y1="120" x2="130" y2="120" stroke="#ccc" stroke-width="1"/><line x1="70" y1="130" x2="130" y2="130" stroke="#ccc" stroke-width="1"/><circle cx="75" cy="105" r="2" fill="#e85d75"/><circle cx="95" cy="115" r="2" fill="#e85d75"/><circle cx="115" cy="125" r="2" fill="#e85d75"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">📅 时间管理</text>' },
+  'HTFCN': { m: 'smile', e: '<ellipse cx="145" cy="110" rx="10" ry="14" fill="#8ec" opacity="0.4"/><rect x="138" y="100" width="14" height="16" rx="7" fill="#8ec"/><path d="M130 125 Q140 120 150 125" stroke="#8ec" stroke-width="2" fill="none"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🍵 绿茶</text>' },
+  'HTFCS': { m: 'small', e: '<circle cx="85" cy="78" r="8" fill="none" stroke="#333" stroke-width="1.5"/><circle cx="115" cy="78" r="8" fill="none" stroke="#333" stroke-width="1.5"/><rect x="130" y="100" width="24" height="16" rx="4" fill="#8ec" opacity="0.3"/><ellipse cx="142" cy="112" rx="8" ry="4" fill="#8ec"/><circle cx="138" cy="110" r="2" fill="#fff"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">🐠 养鱼</text>' },
+  'HDFCN': { m: 'smile', e: '<path d="M85 70 L90 65 L95 70" stroke="#e85d75" stroke-width="2"/><path d="M105 70 L110 65 L115 70" stroke="#e85d75" stroke-width="2"/><circle cx="82" cy="88" rx="4" ry="2" fill="#e85d75"/><circle cx="118" cy="88" rx="4" ry="2" fill="#e85d75"/><path d="M70 120 Q85 110 100 120 Q115 110 130 120" stroke="#e85d75" stroke-width="1.5" fill="none"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">⛓️ 病娇</text>' },
+  'HDFCS': { m: 'sad', e: '<path d="M85 50 L90 55 L95 50" stroke="#ffd700" stroke-width="2"/><path d="M105 50 L110 55 L115 50" stroke="#ffd700" stroke-width="2"/><circle cx="100" cy="48" r="12" fill="none" stroke="#ffd700" stroke-width="2"/><circle cx="75" cy="130" r="3" fill="#ccc"/><circle cx="125" cy="135" r="3" fill="#ccc"/><text x="100" y="178" text-anchor="middle" font-size="11" fill="#e85d75" font-weight="700">👑 孤寡</text>' }
+};
+
+function getAvatar(code) {
+  return `<img src="https://raw.githubusercontent.com/zxn980105/love520test/main/images/${code}.png" alt="${code}" width="140" height="140" style="margin:0 auto;display:block;object-fit:contain;border-radius:50%;" crossorigin="anonymous" onerror="this.style.display='none'">`;
+}
+
+// ===================== 状态 =====================
+let currentQ = 0;
+let answers = [];
+let userInfo = { gender: "", constellation: "" };
+
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+}
+
+function startQuiz() {
+  const g = document.querySelector('input[name="gender"]:checked');
+  const c = document.querySelector('input[name="constellation"]:checked');
+  if (g) userInfo.gender = g.value;
+  if (c) userInfo.constellation = c.value;
+  currentQ = 0;
+  answers = new Array(20).fill(3);
+  renderQuestion();
+  goPage('quiz');
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('q-dimension').textContent = q.dimension;
+  document.getElementById('q-title').textContent = q.title;
+  document.getElementById('q-subtitle').textContent = `第 ${currentQ + 1} 题 / 共 20 题`;
+  document.getElementById('label-left').textContent = q.left;
+  document.getElementById('label-right').textContent = q.right;
+  document.getElementById('q-slider').value = answers[currentQ];
+  document.getElementById('progress-text').textContent = `${currentQ + 1}/20`;
+  document.getElementById('progress-fill').style.width = `${((currentQ + 1) / 20) * 100}%`;
+  document.getElementById('next-btn').textContent = currentQ === 19 ? '查看结果' : '下一题';
+  document.getElementById('prev-btn').disabled = currentQ === 0;
+  document.getElementById('prev-btn').style.opacity = currentQ === 0 ? '0' : '1';
+  document.getElementById('prev-btn').style.pointerEvents = currentQ === 0 ? 'none' : 'auto';
+  updateSliderDots(answers[currentQ]);
+}
+
+function updateSlider(v) {
+  answers[currentQ] = parseInt(v);
+  updateSliderDots(parseInt(v));
+}
+
+function updateSliderDots(v) {
+  document.querySelectorAll('.score-dot').forEach(d => {
+    d.classList.toggle('active', parseInt(d.dataset.v) === v);
+  });
+}
+
+document.querySelectorAll('.score-dot').forEach(d => {
+  d.addEventListener('click', () => {
+    const v = parseInt(d.dataset.v);
+    document.getElementById('q-slider').value = v;
+    updateSlider(v);
+  });
+});
+
+function nextQuestion() {
+  if (currentQ < 19) {
+    currentQ++;
+    const card = document.getElementById('question-card');
+    card.classList.add('slide-leave');
+    setTimeout(() => {
+      renderQuestion();
+      card.classList.remove('slide-leave');
+      card.classList.add('slide-enter');
+      setTimeout(() => card.classList.remove('slide-enter'), 400);
+    }, 250);
+  } else {
+    goPage('loading');
+    setTimeout(showResult, 1800);
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) {
+    currentQ--;
+    const card = document.getElementById('question-card');
+    card.classList.add('slide-leave');
+    setTimeout(() => {
+      renderQuestion();
+      card.classList.remove('slide-leave');
+      card.classList.add('slide-enter');
+      setTimeout(() => card.classList.remove('slide-enter'), 400);
+    }, 250);
+  }
+}
+
+function calculateResult() {
+  const dimScores = {};
+  for (const dim of dimOrder) {
+    const ids = dimMap[dim].ids;
+    let sum = 0;
+    for (const id of ids) sum += answers[id - 1];
+    const avg = sum / 4;
+    dimScores[dim] = { avg, letter: avg < 3 ? dimMap[dim].left : dimMap[dim].right };
+  }
+  const code = dimOrder.map(d => dimScores[d].letter).join('');
+  return { code, dimScores };
+}
+
+function showResult() {
+  const { code, dimScores } = calculateResult();
+  const r = results[code];
+  const p = professional[code];
+  const d = details[code];
+  const rarityPercent = (Math.random() * 9.98 + 0.01).toFixed(2);
+
+  let buffHtml = '';
+  if (userInfo.constellation && constellationBuffs[userInfo.constellation]) {
+    const buff = constellationBuffs[userInfo.constellation];
+    let who = '';
+    if (userInfo.gender === '男') who = '哥们儿';
+    else if (userInfo.gender === '女') who = '姐妹';
+    const title = who ? `${userInfo.constellation}座${who}的专属特征` : `${userInfo.constellation}座专属特征`;
+    buffHtml = `<div class="buff-box"><strong>💫 ${title}</strong><br>${buff}</div>`;
+  }
+
+  const radarHtml = buildRadar(dimScores);
+
+  document.getElementById('result-content').innerHTML = `
+    ${getAvatar(code)}
+    <div class="result-header" style="padding-top:4px;">
+      <div class="label">你的恋爱段位是</div>
+      <div class="type-title">${r.title}</div>
+      <div class="catchphrase">${r.catchphrase}</div>
+      <div class="result-match">有 ${rarityPercent}% 人跟你结果相同</div>
+    </div>
+
+    <div class="share-section" style="margin-top:6px;margin-bottom:0;">
+      <div class="share-btns">
+        <button class="btn-primary" onclick="generateShareImage()">分享给朋友</button>
+        <button class="btn-secondary" onclick="copyResult()">复制文字结果</button>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <h3><span class="icon">📝</span>恋爱解读</h3>
+      <div class="detail-text">${buffHtml}${d}</div>
+    </div>
+
+    <div class="result-card">
+      <h3><span class="icon">📊</span>恋爱偏好</h3>
+      <div style="background:linear-gradient(135deg,#fff5f7,#ffeaee);border-radius:12px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--primary-light);font-size:13px;color:var(--text);line-height:1.8;display:flex;align-items:flex-start;gap:8px;">
+        <span style="flex-shrink:0;">💡</span>
+        <span>${p.interpretation}</span>
+      </div>
+      <div class="radar-wrap">${radarHtml}</div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;">💕 最佳匹配</div>
+      <div class="match-list">${p.matches.map(m => `
+        <div class="match-item">
+          <div class="match-header">
+            <span class="match-title">${m.title}</span>
+            <span class="match-percent">${m.match}%</span>
+          </div>
+          <div class="match-quote">${m.quote}</div>
+        </div>
+      `).join('')}</div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="restart-btn" onclick="goPage('cover')">再测一次</button>
+    </div>
+  `;
+  goPage('result');
+}
+
+function buildRadar(dimScores, compact) {
+  const cx = 150, cy = 130, maxR = 90, levels = 5;
+  const dimKeys = ['相处姿态','表达习惯','情感投入','个人节奏','依恋需求'];
+  const dimLabels = ['相处姿态','表达习惯','情感投入','个人节奏','依恋需求'];
+  const scores = dimKeys.map(d => dimScores[d].avg);
+  const colorPrimary = '#e85d75';
+  const colorText = '#333333';
+
+  function pt(i, r) {
+    const a = (-90 + i * 72) * Math.PI / 180;
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+  }
+
+  // 背景网格
+  let grid = '';
+  for (let lv = 1; lv <= levels; lv++) {
+    const r = (maxR / levels) * lv;
+    const pts = dimKeys.map((_, i) => pt(i, r));
+    grid += `<polygon points="${pts.map(p => p.x + ',' + p.y).join(' ')}" fill="none" stroke="#f0e0e4" stroke-width="1"/>`;
+  }
+  // 轴线
+  let axes = '';
+  for (let i = 0; i < 5; i++) {
+    const p = pt(i, maxR);
+    axes += `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#f0e0e4" stroke-width="1"/>`;
+  }
+  // 数据多边形
+  const dataPts = scores.map((s, i) => pt(i, (s / 5) * maxR));
+  const poly = `<polygon points="${dataPts.map(p => p.x + ',' + p.y).join(' ')}" fill="rgba(232,93,117,0.15)" stroke="${colorPrimary}" stroke-width="2"/>`;
+  // 数据点
+  let dots = '';
+  dataPts.forEach((p, i) => {
+    dots += `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${colorPrimary}" stroke="#fff" stroke-width="2"/>`;
+  });
+  // 标签
+  let labels = '';
+  for (let i = 0; i < 5; i++) {
+    const p = pt(i, maxR + 22);
+    const score = scores[i].toFixed(1);
+    labels += `<text x="${p.x}" y="${p.y - 4}" text-anchor="middle" font-size="11" fill="${colorText}" font-weight="700">${dimLabels[i]}</text>`;
+    labels += `<text x="${p.x}" y="${p.y + 10}" text-anchor="middle" font-size="10" fill="${colorPrimary}" font-weight="700">${score}</text>`;
+  }
+
+  const svg = `<svg class="radar-svg" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">${grid}${axes}${poly}${dots}${labels}</svg>`;
+
+  return svg;
+}
+
+function copyResult() {
+  const { code } = calculateResult();
+  const r = results[code];
+  const d = details[code];
+  const p = professional[code];
+  const text = `【520恋爱段位测试】\n\n我的恋爱段位：${code} · ${r.title}\n\n${r.catchphrase}\n\n${d}\n\n💡 恋爱依恋类型：${p.interpretation}\n💕 最佳匹配：${p.best_match}\n\n快来测测你的恋爱段位→ 链接`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => alert('结果已复制，快去分享吧！'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('结果已复制，快去分享吧！');
+  }
+}
+
+function generateShareImage() {
+  const { code, dimScores } = calculateResult();
+  const r = results[code];
+  const p = professional[code];
+  const d = details[code];
+  const rarityPercent = (Math.random() * 9.98 + 0.01).toFixed(2);
+
+  let buffShare = '';
+  if (userInfo.constellation && constellationBuffs[userInfo.constellation]) {
+    const buff = constellationBuffs[userInfo.constellation];
+    let who = '';
+    if (userInfo.gender === '男') who = '哥们儿';
+    else if (userInfo.gender === '女') who = '姐妹';
+    const title = who ? `${userInfo.constellation}座${who}的专属特征` : `${userInfo.constellation}座专属特征`;
+    buffShare = `<div style="background:linear-gradient(135deg,#fff5f7,#ffeaee);border-left:3px solid #e85d75;padding:10px 14px;border-radius:0 10px 10px 0;font-size:12px;color:#333;margin-bottom:12px;line-height:1.6;"><strong style="color:#e85d75;">💫 ${title}</strong><br>${buff}</div>`;
+  }
+
+  const radarSvg = buildRadar(dimScores, true);
+
+  // 创建分享卡片，先放 body 里但不显示（opacity:0 对 html2canvas 最友好）
+  const shareCard = document.createElement('div');
+  shareCard.id = 'share-card';
+  shareCard.style.cssText = 'position:fixed;top:0;left:0;width:420px;opacity:0;pointer-events:none;z-index:-1;';
+  // 本地图片：不用 crossorigin，加载失败就隐藏
+  const avatarImg = `<img src="https://raw.githubusercontent.com/zxn980105/love520test/main/images/${code}.png" width="120" height="120" style="margin:8px auto;display:block;object-fit:contain;border-radius:50%;" crossorigin="anonymous" id="share-avatar" onerror="this.style.display='none'">`;
+
+  shareCard.innerHTML = `
+    <div class="sc-header">
+      <div class="sc-label">520恋爱段位测试</div>
+      <div style="display:flex;justify-content:center;">${avatarImg}</div>
+      <div class="sc-title">${r.title}</div>
+      <div class="sc-catch">${r.catchphrase}</div>
+    </div>
+    ${buffShare}
+    <div class="sc-detail">${d.substring(0, 200)}...</div>
+    <div style="display:flex;justify-content:center;margin:14px 0;">${radarSvg}</div>
+    <div style="text-align:center;font-size:12px;color:#999;margin-bottom:10px;">
+      有 ${rarityPercent}% 人跟你结果相同
+    </div>
+    <div class="sc-footer">
+      <div>💡 ${p.interpretation}</div>
+      <div style="margin-top:10px;font-size:12px;font-weight:700;color:#e85d75;">💕 最佳匹配</div>
+      ${p.matches.map(m => `
+        <div style="margin-top:6px;text-align:left;background:#fff;border-radius:8px;padding:8px 10px;border:1px solid #f0e0e4;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+            <span style="font-size:12px;font-weight:700;color:#333;">${m.title}</span>
+            <span style="font-size:12px;font-weight:800;color:#e85d75;">${m.match}%</span>
+          </div>
+          <div style="font-size:11px;color:#777;line-height:1.5;">${m.quote}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.body.appendChild(shareCard);
+
+  // 截图逻辑
+  function runCapture() {
+    html2canvas(shareCard, {
+      scale: 3,
+      backgroundColor: '#fff5f7',
+      useCORS: false,
+      allowTaint: true,
+      logging: false,
+      onclone: function(clonedDoc) {
+        // 在克隆文档里处理：把加载失败的头像和 SVG 雷达图都拿掉，避免渲染出错
+        const clonedCard = clonedDoc.getElementById('share-card');
+        if (!clonedCard) return;
+        const badImg = clonedCard.querySelector('#share-avatar');
+        if (badImg && (badImg.naturalWidth === 0 || badImg.style.display === 'none' || !badImg.complete)) {
+          badImg.remove();
+        }
+        const svgEl = clonedCard.querySelector('.radar-svg');
+        if (svgEl) svgEl.remove();
+      }
+    }).then(canvas => {
+      if (shareCard.parentNode) document.body.removeChild(shareCard);
+      const container = document.getElementById('screenshot-container');
+      container.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '12px';
+      container.appendChild(img);
+      document.getElementById('modal-overlay').classList.add('active');
+    }).catch(err => {
+      console.error('html2canvas error:', err);
+      if (shareCard.parentNode) document.body.removeChild(shareCard);
+      alert('生成图片失败，请尝试复制文字结果分享');
+    });
+  }
+
+  // 如果头像图片还在加载，等一等；否则直接截图
+  const avatarEl = shareCard.querySelector('#share-avatar');
+  if (avatarEl && !avatarEl.complete) {
+    avatarEl.onload = runCapture;
+    avatarEl.onerror = runCapture;
+    setTimeout(runCapture, 1500);
+  } else {
+    runCapture();
+  }
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('active');
+  }
+}
+</script>
+</body>
+</html>
