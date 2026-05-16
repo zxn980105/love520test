@@ -976,7 +976,7 @@ const avatarConfig = {
 };
 
 function getAvatar(code) {
-  return `<img src="https://raw.githubusercontent.com/zxn980105/love520test/main/images/${code}.png" alt="${code}" width="140" height="140" style="margin:0 auto;display:block;object-fit:contain;border-radius:50%;" crossorigin="anonymous" onerror="this.style.display='none'">`;
+  return `<img src="https://zxn980105.github.io/love520test/images/${code}.png" alt="${code}" width="140" height="140" style="margin:0 auto;display:block;object-fit:contain;border-radius:50%;" onerror="this.style.display='none'">`;
 }
 
 // ===================== 状态 =====================
@@ -1240,7 +1240,7 @@ function generateShareImage() {
   shareCard.id = 'share-card';
   shareCard.style.cssText = 'position:fixed;top:0;left:0;width:420px;opacity:0;pointer-events:none;z-index:-1;';
   // 本地图片：不用 crossorigin，加载失败就隐藏
-  const avatarImg = `<img src="https://raw.githubusercontent.com/zxn980105/love520test/main/images/${code}.png" width="120" height="120" style="margin:8px auto;display:block;object-fit:contain;border-radius:50%;" crossorigin="anonymous" id="share-avatar" onerror="this.style.display='none'">`;
+  const avatarImg = `<img src="https://zxn980105.github.io/love520test/images/${code}.png" width="120" height="120" style="margin:8px auto;display:block;object-fit:contain;border-radius:50%;" id="share-avatar" onerror="this.style.display='none'">`;
 
   shareCard.innerHTML = `
     <div class="sc-header">
